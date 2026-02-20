@@ -6,9 +6,10 @@ import connectDB from './db/db';
 import authRoutes from './routes/authRoutes';
 import getVIP from './middleware/vipMiddleware';
 import { requestLogger } from './middleware/logger';
+import communityRoutes from './routes/communityRoutes'
+import postRoutes from './routes/postRoutes';
 dotenv.config();
-connectDB(
-)
+connectDB()
 const app : Application = express();
 const port = process.env.PORT || 3000;
 
@@ -17,6 +18,8 @@ app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
 app.use('/api/auth',authRoutes);
+app.use('/api/communities',communityRoutes);
+app.use('/api/post',postRoutes);
 
 app.get('/',getVIP,(req: Request, res: Response) =>{
     res.status(200).json({

@@ -32,7 +32,7 @@ export const createCommunity = async(req: Request,res: Response,next: NextFuncti
     }catch(error : any){    
         if(error.code === 11000){
             res.status(409).json({
-                message :"Community with this already exists!";
+                message :"Community with this already exists!",
             })
             return;
         }

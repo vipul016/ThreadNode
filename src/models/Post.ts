@@ -49,4 +49,4 @@ const PostSchema : Schema<IPost> = new Schema({
 PostSchema.index({community : 1, createdAt: -1});
 
 const Post  = mongoose.model<IPost>('Post',PostSchema);
-export default Post;
+export default Post;        
