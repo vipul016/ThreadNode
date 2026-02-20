@@ -1,5 +1,6 @@
 import express,{Request,Response,NextFunction} from 'express';  
 import Community from '../models/Community';
+import Post from '../models/Post';
 
 export const createCommunity = async(req: Request,res: Response,next: NextFunction): Promise<void> =>{
     try{
@@ -52,6 +53,36 @@ export const getAllCommunties = async(req: Request,res: Response, next: NextFunc
         return;
     }catch(error){
         console.log(error);
+        res.status(500).json({
+            message : "something went wrong"
+        })
+    }
+}
+
+export const getCommunityById = async(req : Request, res : Response, next: NextFunction) : Promise<void> =>{
+    try{
+        const communityId = req.params.id;
+        const [community,posts] = await Promise.all([
+            Community.findById(communityId),
+             Post.find({community : req.params.id}).sort({createdAt: -1}).populate('author','-password') 
+        ])
+        if (!community) {
+            res.status(404).json({ message: "Community not found" });
+            return;
+        }
+
+        res.status(200).json({
+            message: "Data Fetched Successfully",
+            community,
+            posts
+        })
+
+    }catch(error: any){
+        console.log(error);
+        if (error.name === 'CastError') {
+             res.status(404).json({ message: "Community not found" });
+             return;
+        }
         res.status(500).json({
             message : "something went wrong"
         })
