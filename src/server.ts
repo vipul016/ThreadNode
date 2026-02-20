@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import connectDB from './db/db';
 import authRoutes from './routes/authRoutes';
 import getVIP from './middleware/vipMiddleware';
+import { requestLogger } from './middleware/logger';
 dotenv.config();
 connectDB(
 )
@@ -14,6 +15,7 @@ const port = process.env.PORT || 3000;
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(requestLogger);
 app.use('/api/auth',authRoutes);
 
 app.get('/',getVIP,(req: Request, res: Response) =>{

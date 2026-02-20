@@ -17,7 +17,6 @@ interface JwtPayload {
 export const protect = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     let token;
 
-    // 2. Check for the "Bearer" header
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
