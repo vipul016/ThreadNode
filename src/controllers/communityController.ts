@@ -40,3 +40,20 @@ export const createCommunity = async(req: Request,res: Response,next: NextFuncti
         res.status(500).json({ message: "Server Error" });
     }
 }
+
+export const getAllCommunties = async(req: Request,res: Response, next: NextFunction) : Promise<void> =>{
+    try{
+        const communities = await Community.find().limit(20);
+        
+        res.status(200).json({
+            message : "Data Fetched Successfully!",
+            communities
+        })
+        return;
+    }catch(error){
+        console.log(error);
+        res.status(500).json({
+            message : "something went wrong"
+        })
+    }
+}
