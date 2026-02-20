@@ -8,6 +8,7 @@ import getVIP from './middleware/vipMiddleware';
 import { requestLogger } from './middleware/logger';
 import communityRoutes from './routes/communityRoutes'
 import postRoutes from './routes/postRoutes';
+import commentRoutes from './routes/commentRoutes';
 dotenv.config();
 connectDB()
 const app : Application = express();
@@ -20,6 +21,7 @@ app.use(requestLogger);
 app.use('/api/auth',authRoutes);
 app.use('/api/communities',communityRoutes);
 app.use('/api/post',postRoutes);
+app.use('/api/comments',commentRoutes);
 
 app.get('/',getVIP,(req: Request, res: Response) =>{
     res.status(200).json({
