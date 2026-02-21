@@ -7,6 +7,7 @@ export interface IPost extends Document{
     community : mongoose.Types.ObjectId;
     upvotes : number;
     downvotes : number;
+    isDeleted : boolean;
     createdAt : Date,
     updatedAt : Date
 };
@@ -39,7 +40,11 @@ const PostSchema : Schema<IPost> = new Schema({
     downvotes: {
             type: Number,
             default: 0,
-    }
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    },
 
 },
 {
