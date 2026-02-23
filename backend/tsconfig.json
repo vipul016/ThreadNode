@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    /* 1. File Layout */
+    "rootDir": "backend/src",
+    "outDir": "./dist",
+
+  
+    "target": "es2020",        
+    "module": "commonjs",      
+    "moduleResolution": "node",
+
+    "esModuleInterop": true,  
+    "allowSyntheticDefaultImports": true,
+
+    /* 4. Strictness (Safety) */
+    "strict": true,            
+    "noImplicitAny": true,    
+    "skipLibCheck": true,      
+    "forceConsistentCasingInFileNames": true,
+
+    /* 5. Clean up */
+    "resolveJsonModule": true, 
+    "removeComments": true     
+  },
+  "include": ["backend/src/**/*"],
+  "exclude": ["backend/node_modules"]
+}
