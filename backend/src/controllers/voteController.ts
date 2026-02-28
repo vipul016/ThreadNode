@@ -1,61 +1,68 @@
-import express,{Request,Response,NextFunction} from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Vote from '../models/Vote';
-import User from '../models/User';
-import Post from '../models/Post';
 import mongoose from 'mongoose';
 
-export const voteOnItem = async(req : Request,res: Response, next: NextFunction): Promise<void> => {
-    try{
-        
-        const {itemId,itemType,value} = req.body;
+export const voteOnItem = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { itemId, itemType, value } = req.body;
         const userId = req.user?._id;
 
-        if(!itemId || !itemType || ![-1,1].includes(value)){
-            res.status(400).json({
-                message : "Invalid Vote Data!"
-            })
+        // BUG 1 FIXED: Added 0 to the allowed array so users can remove their vote
+        if (!itemId || !itemType || ![-1, 0, 1].includes(value)) {
+            res.status(400).json({ message: "Invalid Vote Data!" });
             return;
         }
 
         const targetModel = mongoose.model(itemType);
+        const existingVote = await Vote.findOne({ user: userId, item: itemId });
 
+        let updatedItem;
 
-        const existingVote = await Vote.findOne({user : userId,item : itemId});
-
-        if(existingVote){
-            if(existingVote.value === value){
+        // SCENARIO A: A vote already exists
+        if (existingVote) {
+            // They sent 0 (remove) OR clicked the same button again
+            if (value === 0 || existingVote.value === value) {
                 await Vote.findByIdAndDelete(existingVote._id);
-                const updateField = value === 1 ? {upvotes : -1} : {downvotes : -1};
-                await targetModel.findByIdAndUpdate(itemId,{$inc : updateField})
-                res.status(200).json({ message: "Vote removed" });
-                return;
-            }else{
-                existingVote.value = value
-                const updateField = value === 1 ? {upvotes : 1,downvotes : -1} : {upvotes : -1,downvotes: 1}
-                await targetModel.findByIdAndUpdate(itemId,{$inc: updateField});
+                
+                const updateField = existingVote.value === 1 ? { upvotes: -1 } : { downvotes: -1 };
+                
+                // BUG 3 FIXED: Added { new: true } to grab the updated math
+                updatedItem = await targetModel.findByIdAndUpdate(itemId, { $inc: updateField }, { new: true });
+            } 
+            // They are switching their vote
+            else {
+                existingVote.value = value;
+                const updateField = value === 1 ? { upvotes: 1, downvotes: -1 } : { upvotes: -1, downvotes: 1 };
+                
+                updatedItem = await targetModel.findByIdAndUpdate(itemId, { $inc: updateField }, { new: true });
                 await existingVote.save();
-                res.status(200).json({message : "Vote changed"});
-                return;
+            }
+        } 
+        // SCENARIO B: Brand new vote
+        else {
+            if (value !== 0) {
+                const newVote = new Vote({
+                    user: userId,
+                    item: itemId,
+                    onModel: itemType,
+                    value: value
+                });
+                await newVote.save();
+
+                const updateField = value === 1 ? { upvotes: 1 } : { downvotes: 1 };
+                updatedItem = await targetModel.findByIdAndUpdate(itemId, { $inc: updateField }, { new: true });
+            } else {
             }
         }
-        const newVote = new Vote({
-            user : userId,
-            item : itemId,
-            onModel : itemType,
-            value : value
+
+        res.status(200).json({
+            message: "Vote processed successfully",
+            upvotes: updatedItem?.upvotes || 0,
+            downvotes: updatedItem?.downvotes || 0
         });
 
-        await newVote.save();
-        const updateField = value === 1 ? { upvotes: 1 } : { downvotes: 1 };
-        await targetModel.findByIdAndUpdate(itemId, { $inc: updateField });
-
-        res.status(201).json({
-            message : "vote casted successfully",
-            vote : newVote
-        })
-
-    }catch(error){
+    } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Something went wrong with voting" })
+        res.status(500).json({ message: "Something went wrong with voting" });
     }
-}
+};

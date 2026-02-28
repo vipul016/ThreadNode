@@ -107,6 +107,7 @@ export const getAllPosts = async(req : Request,res : Response,next : NextFunctio
         .sort({_id: -1})
         .limit(limit)
         .populate('author','-password')
+        .populate('community','name')
         .lean();
 
 
